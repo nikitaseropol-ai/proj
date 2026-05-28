@@ -9,12 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SERVER['HTTP_X_REQUESTED_W
 
 // Данные котиков (id, имя, фото (эмодзи или ссылка), описание, характер, цена)
 $cats = [
-    1 => ['id'=>1, 'name'=>'Мурзик', 'photo'=>'images/murzik.jpg', 'price'=>500, 'character'=>'Ласковый и игривый', 'description'=>'Обожает сидеть на руках...', 'color'=>'рыжий'],
-    2 => ['id'=>2, 'name'=>'Снежок', 'photo'=>'images/snowball.jpg', 'price'=>450, ...],
-    3 => ['id'=>3, 'name'=>'Басик', 'photo'=>'images/basik.jpg', ...],
-    4 => ['id'=>4, 'name'=>'Маркиза', 'photo'=>'images/markiza.jpg', ...],
-    5 => ['id'=>5, 'name'=>'Пухляш', 'photo'=>'images/puhlyash.jpg', ...],
-    6 => ['id'=>6, 'name'=>'Бусинка', 'photo'=>'images/businka.jpg', ...]
+    1 => ['id'=>1, 'name'=>'Мурзик', 'photo'=>'images/murzik.jpg', 'price'=>500, 'character'=>'Ласковый и игривый', 'description'=>'Обожает сидеть на руках и мурлыкать. Любит игрушки-мышки.', 'color'=>'рыжий'],
+    2 => ['id'=>2, 'name'=>'Снежок', 'photo'=>'images/snowball.jpg', 'price'=>450, 'character'=>'Спокойный и пушистый', 'description'=>'Белый красавец, любит спать на подушках. Очень фотогеничный.', 'color'=>'белый'],
+    3 => ['id'=>3, 'name'=>'Басик', 'photo'=>'images/basik.jpg', 'price'=>550, 'character'=>'Энергичный и умный', 'description'=>'Черный котик, любит охотиться за лазерной указкой.', 'color'=>'чёрный'],
+    4 => ['id'=>4, 'name'=>'Маркиза', 'photo'=>'images/markiza.jpg', 'price'=>600, 'character'=>'Грациозная и нежная', 'description'=>'Полосатая кошечка, обожает почёсывания за ушком.', 'color'=>'полосатая'],
+    5 => ['id'=>5, 'name'=>'Пухляш', 'photo'=>'images/puhlyash.jpg', 'price'=>400, 'character'=>'Соня и лакомка', 'description'=>'Рыжий толстячок, любит покушать и поспать на солнышке.', 'color'=>'рыжий'],
+    6 => ['id'=>6, 'name'=>'Бусинка', 'photo'=>'images/businka.jpg', 'price'=>650, 'character'=>'Общительная и активная', 'description'=>'Чёрно-белая кошечка, любит играть с детьми.', 'color'=>'чёрно-белый']
 ];
 
 // Загрузка данных пользователя, если авторизован
@@ -247,7 +247,9 @@ if (isset($_SESSION['user_id'])) {
     <div class="cats-grid" id="catsGrid">
         <?php foreach ($cats as $cat): ?>
         <div class="cat-card" data-cat-id="<?= $cat['id'] ?>">
-            <div class="cat-photo"><?= $cat['photo'] ?></div>
+            <div class="cat-photo">
+    <img src="<?= htmlspecialchars($cat['photo']) ?>" alt="<?= htmlspecialchars($cat['name']) ?>" style="width:100%; height:150px; object-fit:cover; border-radius:20px;">
+</div>
             <div class="cat-info">
                 <h3><?= htmlspecialchars($cat['name']) ?></h3>
                 <div class="cat-price"><?= $cat['price'] ?> ₽/день</div>
@@ -357,7 +359,9 @@ if (isset($_SESSION['user_id'])) {
         if (!cat) return;
         modalBody.innerHTML = `
             <h2>${cat.name}</h2>
-            <div style="font-size:80px; text-align:center">${cat.photo}</div>
+            <div style="text-align:center">
+    <img src="${cat.photo}" alt="${cat.name}" style="max-width:100%; max-height:200px; border-radius:20px;">
+</div>
             <p><strong>Характер:</strong> ${cat.character}</p>
             <p><strong>Цвет:</strong> ${cat.color}</p>
             <p><strong>Цена аренды:</strong> ${cat.price} ₽/день</p>
