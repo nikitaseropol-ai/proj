@@ -2,9 +2,9 @@
 session_start();
 
 $host = 'localhost';
-$dbuser = 'root';       // замените на ваши данные
-$dbpass = '';           // пароль БД
-$dbname = 'cat_rental';
+$dbuser = 'u82271';        // ваше имя пользователя БД
+$dbpass = '5648537';       // ваш пароль БД
+$dbname = 'u82271';        // имя вашей базы данных
 
 $mysqli = new mysqli($host, $dbuser, $dbpass, $dbname);
 if ($mysqli->connect_error) {
@@ -12,7 +12,7 @@ if ($mysqli->connect_error) {
 }
 $mysqli->set_charset("utf8");
 
-// Создание таблиц
+// Создание таблиц (если они ещё не созданы)
 $mysqli->query("
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS rentals (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 )");
 
+// Остальные функции (generateUniqueLogin, generateRandomPassword, validateRentalData) остаются без изменений
 function generateUniqueLogin($mysqli) {
     do {
         $login = 'catlover_' . bin2hex(random_bytes(4));
@@ -66,7 +67,7 @@ function validateRentalData($data, &$errors) {
     if (empty($data['cat_name'])) $errors['cat_name'] = "Выберите котика";
     if (empty($data['start_date'])) $errors['start_date'] = "Укажите дату начала";
     if (empty($data['end_date'])) $errors['end_date'] = "Укажите дату окончания";
-    elseif (strtotime($data['end_date']) <= strtotime($data['start_date'])) $errors['end_date'] = "Дата окончания позже даты начала";
+    elseif (strtotime($data['end_date']) <= strtotime($data['start_date'])) $errors['end_date'] = "Дата окончания должна быть позже даты начала";
     if (strlen($data['comment'] ?? '') > 2000) $errors['comment'] = "Комментарий не более 2000 символов";
     return empty($errors);
 }
