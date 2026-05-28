@@ -2,9 +2,9 @@
 session_start();
 
 $host = 'localhost';
-$dbuser = 'u82271';        // ваше имя пользователя БД
-$dbpass = '5648537';       // ваш пароль БД
-$dbname = 'u82271';        // имя вашей базы данных
+$dbuser = 'u82271';        // замените на своего пользователя БД
+$dbpass = '5648537';       // замените на свой пароль БД
+$dbname = 'u82271';        // замените на имя своей БД
 
 $mysqli = new mysqli($host, $dbuser, $dbpass, $dbname);
 if ($mysqli->connect_error) {
@@ -12,9 +12,12 @@ if ($mysqli->connect_error) {
 }
 $mysqli->set_charset("utf8");
 
-// Создание таблиц (если они ещё не созданы)
+// Создание таблиц (без конфликта со старыми таблицами, используем новые имена)
+$table_users = 'cat_users';
+$table_rentals = 'cat_rentals';
+
 $mysqli->query("
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS `$table_users` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     login VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
@@ -26,7 +29,7 @@ CREATE TABLE IF NOT EXISTS users (
 )");
 
 $mysqli->query("
-CREATE TABLE IF NOT EXISTS rentals (
+CREATE TABLE IF NOT EXISTS `$table_rentals` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     cat_name VARCHAR(100) NOT NULL,
@@ -36,14 +39,13 @@ CREATE TABLE IF NOT EXISTS rentals (
     litter BOOLEAN DEFAULT 0,
     toys BOOLEAN DEFAULT 0,
     comment TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES `$table_users`(id) ON DELETE CASCADE
 )");
 
-// Остальные функции (generateUniqueLogin, generateRandomPassword, validateRentalData) остаются без изменений
-function generateUniqueLogin($mysqli) {
+function generateUniqueLogin($mysqli, $table_users) {
     do {
         $login = 'catlover_' . bin2hex(random_bytes(4));
-        $check = $mysqli->prepare("SELECT id FROM users WHERE login = ?");
+        $check = $mysqli->prepare("SELECT id FROM `$table_users` WHERE login = ?");
         $check->bind_param("s", $login);
         $check->execute();
         $exists = $check->get_result()->num_rows > 0;
