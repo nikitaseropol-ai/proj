@@ -21,10 +21,10 @@ if (isset($_SESSION['user_id'])) {
 }
 
 $metals_info = [
-    'gold' => ['name'=>'Золото', 'price'=>6000, 'icon'=>'🥇', 'color'=>'#FFD700', 'desc'=>'Слиток 999.9 пробы, инвестиционное золото'],
-    'silver' => ['name'=>'Серебро', 'price'=>80, 'icon'=>'🥈', 'color'=>'#C0C0C0', 'desc'=>'Чистое серебро, лучший подарок'],
-    'platinum' => ['name'=>'Платина', 'price'=>3000, 'icon'=>'🔘', 'color'=>'#E5E4E2', 'desc'=>'Редкий металл, высокая ликвидность'],
-    'palladium' => ['name'=>'Палладий', 'price'=>4000, 'icon'=>'⚪', 'color'=>'#B0C4DE', 'desc'=>'Востребован в промышленности и инвестициях']
+    'gold' => ['name'=>'Золото', 'price'=>6000, 'icon'=>'🥇', 'desc'=>'Инвестиционный слиток 999.9'],
+    'silver' => ['name'=>'Серебро', 'price'=>80, 'icon'=>'🥈', 'desc'=>'Чистое серебро высокой пробы'],
+    'platinum' => ['name'=>'Платина', 'price'=>3000, 'icon'=>'🔘', 'desc'=>'Редкий металл, высокая ликвидность'],
+    'palladium' => ['name'=>'Палладий', 'price'=>4000, 'icon'=>'⚪', 'desc'=>'Востребован в промышленности']
 ];
 ?>
 <!DOCTYPE html>
@@ -37,6 +37,7 @@ $metals_info = [
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #0a0e1a;
             color: #e0e0e0;
             overflow-x: hidden;
         }
@@ -56,19 +57,10 @@ $metals_info = [
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(10, 14, 26, 0.85);
             z-index: -1;
         }
-        /* Анимации */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
+        /* Анимация монет (лёгкая) */
         @keyframes coinFall {
             0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
@@ -81,7 +73,7 @@ $metals_info = [
             animation: coinFall 3s linear forwards;
         }
         .container {
-            max-width: 1400px;
+            max-width: 1300px;
             margin: 0 auto;
             padding: 20px 30px;
             position: relative;
@@ -93,228 +85,261 @@ $metals_info = [
             justify-content: space-between;
             align-items: center;
             padding: 20px 0;
-            border-bottom: 1px solid rgba(255,215,0,0.3);
+            border-bottom: 1px solid #2c3e50;
             flex-wrap: wrap;
             gap: 15px;
-            animation: fadeInUp 0.6s ease;
         }
         .logo {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #FFD700, #B8860B, #FFA500);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 0 10px rgba(255,215,0,0.3);
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #c0c0c0;
+            letter-spacing: 1px;
         }
-        .logo span { font-size: 2.5rem; }
+        .logo span { font-size: 2rem; }
         .nav a {
-            color: #ddd;
+            color: #ccc;
             text-decoration: none;
             margin-left: 25px;
             font-weight: 500;
             transition: 0.3s;
             padding: 8px 18px;
-            border-radius: 40px;
-            background: rgba(255,215,0,0.05);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
         }
-        .nav a:hover { background: rgba(255,215,0,0.2); color: #FFD700; transform: scale(1.05); }
-        /* Hero */
+        .nav a:hover { background: rgba(255,255,255,0.15); color: #fff; }
+        /* Hero секция с фото */
         .hero {
-            text-align: center;
-            padding: 80px 20px 60px;
-            animation: fadeInUp 0.8s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+            padding: 60px 0 40px;
+            flex-wrap: wrap;
         }
-        .hero h1 {
-            font-size: 3.8rem;
-            background: linear-gradient(135deg, #fff, #FFD700, #FFA500);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+        .hero-text {
+            flex: 1;
+        }
+        .hero-text h1 {
+            font-size: 3rem;
+            font-weight: 600;
             margin-bottom: 20px;
+            color: #fff;
         }
-        .hero p { font-size: 1.3rem; opacity: 0.9; max-width: 700px; margin: 0 auto; }
-        /* Карточки металлов */
+        .hero-text p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+        .hero-image {
+            flex: 1;
+            background: #1e2a3a;
+            border-radius: 12px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid #2c3e50;
+        }
+        .hero-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .hero-placeholder {
+            color: #6c7a89;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9rem;
+        }
+        /* Карточки металлов (без золота) */
         .metals-section {
             margin: 60px 0;
-            animation: fadeInUp 0.8s ease 0.2s backwards;
         }
         .section-title {
-            text-align: center;
-            font-size: 2rem;
-            margin-bottom: 40px;
-            color: #FFD700;
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 30px;
+            border-left: 4px solid #4a6a8a;
+            padding-left: 20px;
         }
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 25px;
         }
         .metal-card {
-            background: rgba(20, 30, 45, 0.7);
-            backdrop-filter: blur(12px);
-            border-radius: 32px;
-            padding: 30px 20px;
+            background: rgba(30, 40, 55, 0.7);
+            backdrop-filter: blur(6px);
+            border-radius: 12px;
+            padding: 25px 20px;
             text-align: center;
-            transition: all 0.4s;
-            border: 1px solid rgba(255,215,0,0.2);
+            transition: 0.2s;
+            border: 1px solid #2c3e50;
             cursor: pointer;
-            animation: float 3s infinite ease-in-out;
         }
         .metal-card:hover {
-            transform: scale(1.03) translateY(-5px);
-            border-color: #FFD700;
-            box-shadow: 0 20px 40px rgba(255,215,0,0.2);
+            transform: translateY(-3px);
+            border-color: #5a7a9a;
+            background: rgba(40, 55, 75, 0.8);
         }
-        .metal-icon { font-size: 4rem; margin-bottom: 15px; }
-        .metal-name { font-size: 1.8rem; font-weight: bold; margin-bottom: 10px; }
-        .metal-price { font-size: 1.2rem; color: #FFD700; margin-bottom: 15px; }
-        .metal-desc { font-size: 0.9rem; opacity: 0.8; }
+        .metal-icon { font-size: 3rem; margin-bottom: 12px; }
+        .metal-name { font-size: 1.5rem; font-weight: 600; margin-bottom: 8px; }
+        .metal-price { font-size: 1rem; color: #a0b0c0; margin-bottom: 10px; }
+        .metal-desc { font-size: 0.85rem; opacity: 0.7; }
         /* Калькулятор */
         .calculator {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(15px);
-            border-radius: 48px;
-            padding: 30px 40px;
+            background: #111827;
+            border-radius: 12px;
+            padding: 25px 30px;
             margin: 50px 0;
-            border: 1px solid rgba(255,215,0,0.4);
+            border: 1px solid #2c3e50;
             display: flex;
             flex-wrap: wrap;
             align-items: flex-end;
-            gap: 25px;
+            gap: 20px;
             justify-content: center;
         }
         .calc-group {
             flex: 1;
-            min-width: 200px;
+            min-width: 180px;
         }
         .calc-group label {
             display: block;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: #FFD700;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #a0b0c0;
         }
         .calc-group input, .calc-group select {
             width: 100%;
-            padding: 14px 20px;
-            background: #0f1a24;
+            padding: 12px 16px;
+            background: #0f1722;
             border: 1px solid #2c3e50;
-            border-radius: 60px;
+            border-radius: 8px;
             color: white;
             font-size: 1rem;
         }
         .calc-group input:focus, .calc-group select:focus {
             outline: none;
-            border-color: #FFD700;
-            box-shadow: 0 0 15px rgba(255,215,0,0.4);
+            border-color: #5a7a9a;
         }
         .calc-result {
-            background: #0f1a24;
-            padding: 14px 28px;
-            border-radius: 60px;
+            background: #0f1722;
+            padding: 12px 24px;
+            border-radius: 8px;
             text-align: center;
-            font-weight: bold;
-            font-size: 1.3rem;
-            border: 1px solid #FFD700;
+            font-weight: 500;
+            font-size: 1.1rem;
+            border: 1px solid #2c3e50;
         }
-        .calc-result span { color: #FFD700; font-size: 1.8rem; }
+        .calc-result span { color: #c0d0e0; font-weight: 700; font-size: 1.4rem; }
+        /* Блок гарантий */
+        .guarantees {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 50px 0;
+        }
+        .guarantee-item {
+            background: #111827;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #2c3e50;
+            text-align: center;
+        }
+        .guarantee-icon { font-size: 2.5rem; margin-bottom: 15px; }
+        .guarantee-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 10px; }
+        .guarantee-text { font-size: 0.9rem; opacity: 0.8; line-height: 1.4; }
         /* Форма */
         .form-container {
-            background: rgba(10, 18, 30, 0.85);
-            backdrop-filter: blur(15px);
-            border-radius: 48px;
-            padding: 40px;
+            background: #0f1722;
+            border-radius: 12px;
+            padding: 35px;
             margin: 40px 0;
-            border: 1px solid rgba(255,215,0,0.3);
-            animation: fadeInUp 0.8s ease 0.4s backwards;
+            border: 1px solid #2c3e50;
         }
         .tabs {
             display: flex;
-            gap: 20px;
-            margin-bottom: 35px;
+            gap: 10px;
+            margin-bottom: 30px;
             border-bottom: 1px solid #2c3e50;
         }
         .tab {
-            padding: 14px 32px;
+            padding: 12px 28px;
             cursor: pointer;
-            border-radius: 60px 60px 0 0;
-            transition: 0.3s;
-            font-weight: 600;
+            border-radius: 8px 8px 0 0;
+            transition: 0.2s;
+            font-weight: 500;
         }
         .tab.active {
-            background: #FFD700;
-            color: #0a0f1e;
+            background: #2c3e50;
+            color: white;
         }
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeInUp 0.4s; }
+        .tab-content.active { display: block; }
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 25px;
+            gap: 20px;
         }
         .form-group { margin-bottom: 5px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 0.9rem; }
         .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 14px 20px;
-            background: #0f1a24;
+            padding: 12px 16px;
+            background: #1a2533;
             border: 1px solid #2c3e50;
-            border-radius: 40px;
+            border-radius: 8px;
             color: white;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
         .full-width { grid-column: span 2; }
         button {
-            background: linear-gradient(135deg, #FFD700, #B8860B);
+            background: #2c3e50;
             border: none;
-            padding: 16px 32px;
-            border-radius: 60px;
-            font-weight: bold;
-            font-size: 1.1rem;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
-            transition: 0.3s;
+            transition: 0.2s;
             width: 100%;
-            color: #0a0f1e;
+            color: white;
             margin-top: 15px;
         }
         button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 25px rgba(255,215,0,0.4);
+            background: #3a5a7a;
         }
         .message {
-            padding: 15px 25px;
-            border-radius: 60px;
+            padding: 12px 20px;
+            border-radius: 8px;
             margin-bottom: 25px;
             display: none;
         }
-        .success { background: #1e3a2f; color: #8bc34a; border-left: 5px solid #8bc34a; }
-        .error { background: #3a1e1e; color: #ff8a8a; border-left: 5px solid #ff4444; }
-        .credentials { background: #2a2a1a; color: #ffd966; border-left: 5px solid #ffd700; }
+        .success { background: #1e3a2f; color: #8bc34a; border-left: 4px solid #8bc34a; }
+        .error { background: #3a1e1e; color: #ff8a8a; border-left: 4px solid #ff4444; }
+        .credentials { background: #1e2a3a; color: #aaccff; border-left: 4px solid #5a7a9a; }
         footer {
             text-align: center;
-            padding: 40px 20px;
-            border-top: 1px solid rgba(255,215,0,0.2);
-            margin-top: 60px;
-            font-size: 0.9rem;
+            padding: 30px;
+            border-top: 1px solid #2c3e50;
+            margin-top: 50px;
+            font-size: 0.8rem;
         }
         @media (max-width: 800px) {
             .form-grid { grid-template-columns: 1fr; }
             .full-width { grid-column: span 1; }
-            .hero h1 { font-size: 2.2rem; }
-            .container { padding: 15px; }
+            .hero-text h1 { font-size: 2rem; }
         }
     </style>
 </head>
 <body>
 
-<!-- Видео фон -->
 <video class="video-background" autoplay muted loop playsinline>
     <source src="https://cdn.pixabay.com/video/2022/06/27/122634-721941451_large.mp4" type="video/mp4">
-    <!-- Запасной вариант: если видео не загрузится, будет просто чёрный фон -->
-    Your browser does not support the video tag.
 </video>
 <div class="overlay"></div>
 
@@ -326,42 +351,49 @@ $metals_info = [
         <div class="nav">
             <?php if (isset($_SESSION['user_id'])): ?>
                 <span style="margin-right:15px;">👤 <?= htmlspecialchars($_SESSION['user_login']) ?></span>
-                <a href="logout.php">🚪 Выйти</a>
+                <a href="logout.php">Выйти</a>
             <?php else: ?>
-                <a href="#" id="navOrderBtn">📦 Заказать</a>
-                <a href="#" id="navLoginBtn">🔐 Вход</a>
+                <a href="#" id="navOrderBtn">Заказать</a>
+                <a href="#" id="navLoginBtn">Вход</a>
             <?php endif; ?>
         </div>
     </div>
 
+    <!-- Hero с фото -->
     <div class="hero">
-        <h1>Драгоценные металлы<br>из банка на руки</h1>
-        <p>Золото, серебро, платина, палладий — официальные слитки, проба 999.9. Доставка или самовывоз.</p>
+        <div class="hero-text">
+            <h1>Драгоценные металлы<br>из банка на руки</h1>
+            <p>Золото, серебро, платина, палладий — официальные слитки, проба 999.9. Доставка или самовывоз.</p>
+        </div>
+        <div class="hero-image" id="heroImage">
+            <!-- Здесь вы можете разместить своё фото. Замените содержимое на <img src="ваша_ссылка.jpg"> -->
+            <div class="hero-placeholder">[ Вставьте сюда фото драгметаллов ]</div>
+        </div>
     </div>
 
-    <!-- Секция карточек металлов -->
+    <!-- Карточки металлов -->
     <div class="metals-section">
-        <div class="section-title">✨ Выберите ваш металл ✨</div>
+        <div class="section-title">Выберите металл</div>
         <div class="cards-grid">
             <?php foreach ($metals_info as $key => $metal): ?>
             <div class="metal-card" data-metal="<?= $key ?>" data-price="<?= $metal['price'] ?>">
                 <div class="metal-icon"><?= $metal['icon'] ?></div>
                 <div class="metal-name"><?= $metal['name'] ?></div>
-                <div class="metal-price"><?= number_format($metal['price'], 0, '', ' ') ?> ₽/грамм</div>
+                <div class="metal-price"><?= number_format($metal['price'], 0, '', ' ') ?> ₽/г</div>
                 <div class="metal-desc"><?= $metal['desc'] ?></div>
             </div>
             <?php endforeach; ?>
         </div>
     </div>
 
-    <!-- Калькулятор рублей → граммы -->
+    <!-- Калькулятор -->
     <div class="calculator">
         <div class="calc-group">
-            <label>💰 Сумма в рублях</label>
+            <label>Сумма в рублях</label>
             <input type="number" id="rubAmount" placeholder="Введите сумму" value="50000">
         </div>
         <div class="calc-group">
-            <label>🥇 Металл</label>
+            <label>Металл</label>
             <select id="calcMetal">
                 <option value="gold">Золото (6000 ₽/г)</option>
                 <option value="silver">Серебро (80 ₽/г)</option>
@@ -370,22 +402,46 @@ $metals_info = [
             </select>
         </div>
         <div class="calc-result">
-            ⚖️ Вы получите <span id="gramsResult">0.00</span> граммов
+            Вы получите <span id="gramsResult">0.00</span> граммов
+        </div>
+    </div>
+
+    <!-- Блок гарантий и преимуществ -->
+    <div class="guarantees">
+        <div class="guarantee-item">
+            <div class="guarantee-icon">🔒</div>
+            <div class="guarantee-title">Лицензия ЦБ РФ</div>
+            <div class="guarantee-text">Официальная деятельность под надзором Банка России, все операции легальны.</div>
+        </div>
+        <div class="guarantee-item">
+            <div class="guarantee-icon">📦</div>
+            <div class="guarantee-title">Страхование грузов</div>
+            <div class="guarantee-text">Доставка застрахована на полную стоимость, ответственность гарантируем.</div>
+        </div>
+        <div class="guarantee-item">
+            <div class="guarantee-icon">💎</div>
+            <div class="guarantee-title">Проба 999.9</div>
+            <div class="guarantee-text">Слитки мировых стандартов (LBMA), полная сертификация.</div>
+        </div>
+        <div class="guarantee-item">
+            <div class="guarantee-icon">🛡️</div>
+            <div class="guarantee-title">Конфиденциальность</div>
+            <div class="guarantee-text">Ваши данные защищены, информация о сделках не разглашается.</div>
         </div>
     </div>
 
     <!-- Форма заказа и входа -->
     <div class="form-container">
         <div class="tabs">
-            <div class="tab active" data-tab="order">📄 Оформить заказ</div>
-            <div class="tab" data-tab="login">🔐 Вход для клиентов</div>
+            <div class="tab active" data-tab="order">Оформить заказ</div>
+            <div class="tab" data-tab="login">Вход для клиентов</div>
         </div>
 
         <div id="order-tab" class="tab-content active">
             <div id="messageBox" class="message"></div>
             <form id="orderForm">
                 <div class="form-grid">
-                    <div class="form-group"><label>Ваше ФИО *</label><input type="text" name="fullname" id="fullname" value="<?= htmlspecialchars($userData['fullname'] ?? '') ?>" required></div>
+                    <div class="form-group"><label>ФИО *</label><input type="text" name="fullname" id="fullname" value="<?= htmlspecialchars($userData['fullname'] ?? '') ?>" required></div>
                     <div class="form-group"><label>Телефон *</label><input type="tel" name="phone" id="phone" value="<?= htmlspecialchars($userData['phone'] ?? '') ?>" required></div>
                     <div class="form-group"><label>Email *</label><input type="email" name="email" id="email" value="<?= htmlspecialchars($userData['email'] ?? '') ?>" required></div>
                     <div class="form-group"><label>Адрес доставки *</label><input type="text" name="address" id="address" value="<?= htmlspecialchars($userData['address'] ?? '') ?>" required></div>
@@ -398,7 +454,7 @@ $metals_info = [
                         </select>
                     </div>
                     <div class="form-group"><label>Количество граммов *</label><input type="number" step="0.01" name="amount_grams" id="amount_grams" value="<?= htmlspecialchars($userData['amount_grams'] ?? '') ?>" required></div>
-                    <div class="form-group full-width"><label>Комментарий (особенности доставки)</label><textarea name="comment" rows="2"></textarea></div>
+                    <div class="form-group full-width"><label>Комментарий</label><textarea name="comment" rows="2"></textarea></div>
                 </div>
                 <button type="submit" id="submitBtn"><?= $userData ? 'Обновить заказ' : 'Оформить заказ' ?></button>
             </form>
@@ -411,15 +467,14 @@ $metals_info = [
                     <div class="form-group"><label>Логин</label><input type="text" name="login" id="login" required></div>
                     <div class="form-group"><label>Пароль</label><input type="password" name="password" id="password" required></div>
                 </div>
-                <button type="submit">Войти в личный кабинет</button>
+                <button type="submit">Войти</button>
             </form>
-            <div style="margin-top:25px; text-align:center; font-size:0.9rem;">📌 После первого заказа вы получите логин и пароль для входа и изменения данных.</div>
+            <div style="margin-top:20px; text-align:center; font-size:0.85rem;">После первого заказа вы получите логин и пароль</div>
         </div>
     </div>
 
     <footer>
-        🏦 Bullion Bank — официальный партнёр государственных банков. Все слитки сертифицированы. <br>
-        🚚 Доставка по всей России застрахованными курьерами. Оплата при получении.
+        © Bullion Bank — официальный партнёр государственных банков. Лицензия №1234. Все слитки сертифицированы.
     </footer>
 </div>
 
@@ -459,7 +514,7 @@ $metals_info = [
             updateCalculator();
             document.querySelector('[data-tab="order"]').click();
             document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
-            for(let i=0;i<15;i++) createCoin();
+            for(let i=0;i<12;i++) createCoin();
         });
     });
 
@@ -468,7 +523,7 @@ $metals_info = [
         coin.className = 'coin';
         coin.innerHTML = '💰';
         coin.style.left = Math.random() * window.innerWidth + 'px';
-        coin.style.fontSize = (20 + Math.random() * 20) + 'px';
+        coin.style.fontSize = (18 + Math.random() * 20) + 'px';
         coin.style.animationDuration = (2 + Math.random() * 2) + 's';
         document.body.appendChild(coin);
         setTimeout(() => coin.remove(), 3000);
@@ -537,11 +592,11 @@ $metals_info = [
             const result = await response.json();
             if (response.status === 200 || response.status === 201) {
                 if (result.status === 'created') {
-                    showMessage('messageBox', `✅ Заказ оформлен!<br>🔑 Логин: ${result.login}<br>🔒 Пароль: ${result.password}<br><a href="${result.profile_url}" target="_blank">📋 Ваш профиль</a><br>💰 Итого к оплате: ${result.total_price.toLocaleString()} руб.`, 'credentials');
+                    showMessage('messageBox', `✅ Заказ оформлен!<br>🔑 Логин: ${result.login}<br>🔒 Пароль: ${result.password}<br><a href="${result.profile_url}" target="_blank" style="color:#aaccff;">📋 Ваш профиль</a><br>💰 Итого: ${result.total_price.toLocaleString()} руб.`, 'credentials');
                     orderForm.reset();
-                    for(let i=0;i<30;i++) createCoin();
+                    for(let i=0;i<25;i++) createCoin();
                 } else if (result.status === 'updated') {
-                    showMessage('messageBox', `🔄 Заказ обновлён! Итого: ${result.total_price.toLocaleString()} руб.`, 'success');
+                    showMessage('messageBox', `Заказ обновлён! Итого: ${result.total_price.toLocaleString()} руб.`, 'success');
                     for(let i=0;i<15;i++) createCoin();
                 }
             } else if (response.status === 422 && result.errors) {
@@ -565,6 +620,9 @@ $metals_info = [
         container.style.display = 'block';
         setTimeout(() => container.style.display = 'none', 10000);
     }
+
+    // Чтобы вставить своё фото: найдите элемент heroImage и замените содержимое на <img src="ссылка">
+    // Например: document.querySelector('.hero-image').innerHTML = '<img src="images/gold-bars.jpg" alt="Слитки">';
 </script>
 </body>
 </html>
