@@ -2,9 +2,9 @@
 session_start();
 
 $host = 'localhost';
-$dbuser = 'u82271';        // замените на своего пользователя БД
-$dbpass = '5648537';       // замените на свой пароль БД
-$dbname = 'u82271';        // замените на имя своей БД
+$dbuser = 'u82271';
+$dbpass = '5648537';
+$dbname = 'u82271';
 
 $mysqli = new mysqli($host, $dbuser, $dbpass, $dbname);
 if ($mysqli->connect_error) {
@@ -12,9 +12,9 @@ if ($mysqli->connect_error) {
 }
 $mysqli->set_charset("utf8");
 
-// Создание таблиц (без конфликта со старыми таблицами, используем новые имена)
-$table_users = 'cat_users';
-$table_rentals = 'cat_rentals';
+// Таблицы
+$table_users = 'bank_users';
+$table_orders = 'bank_orders';
 
 $mysqli->query("
 CREATE TABLE IF NOT EXISTS `$table_users` (
@@ -29,23 +29,29 @@ CREATE TABLE IF NOT EXISTS `$table_users` (
 )");
 
 $mysqli->query("
-CREATE TABLE IF NOT EXISTS `$table_rentals` (
+CREATE TABLE IF NOT EXISTS `$table_orders` (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    cat_name VARCHAR(100) NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    food BOOLEAN DEFAULT 0,
-    litter BOOLEAN DEFAULT 0,
-    toys BOOLEAN DEFAULT 0,
-    comment TEXT,
+    metal_type ENUM('gold', 'silver', 'platinum', 'palladium') NOT NULL,
+    amount_grams DECIMAL(10,2) NOT NULL,
+    total_price DECIMAL(12,2) NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending', 'approved', 'completed') DEFAULT 'pending',
     FOREIGN KEY (user_id) REFERENCES `$table_users`(id) ON DELETE CASCADE
 )");
 
-function generateUniqueLogin($mysqli, $table_users) {
+// Цены за грамм (руб)
+$metal_prices = [
+    'gold' => 6000,
+    'silver' => 80,
+    'platinum' => 3000,
+    'palladium' => 4000
+];
+
+function generateUniqueLogin($mysqli, $table) {
     do {
-        $login = 'catlover_' . bin2hex(random_bytes(4));
-        $check = $mysqli->prepare("SELECT id FROM `$table_users` WHERE login = ?");
+        $login = 'client_' . bin2hex(random_bytes(4));
+        $check = $mysqli->prepare("SELECT id FROM `$table` WHERE login = ?");
         $check->bind_param("s", $login);
         $check->execute();
         $exists = $check->get_result()->num_rows > 0;
@@ -59,18 +65,15 @@ function generateRandomPassword($length = 10) {
     return substr(str_shuffle($chars), 0, $length);
 }
 
-function validateRentalData($data, &$errors) {
+function validateOrderData($data, &$errors, $metal_prices) {
     $errors = [];
     if (empty($data['fullname'])) $errors['fullname'] = "Введите ФИО";
     if (empty($data['phone'])) $errors['phone'] = "Введите телефон";
     if (empty($data['email'])) $errors['email'] = "Введите email";
     elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) $errors['email'] = "Неверный email";
     if (empty($data['address'])) $errors['address'] = "Введите адрес";
-    if (empty($data['cat_name'])) $errors['cat_name'] = "Выберите котика";
-    if (empty($data['start_date'])) $errors['start_date'] = "Укажите дату начала";
-    if (empty($data['end_date'])) $errors['end_date'] = "Укажите дату окончания";
-    elseif (strtotime($data['end_date']) <= strtotime($data['start_date'])) $errors['end_date'] = "Дата окончания должна быть позже даты начала";
-    if (strlen($data['comment'] ?? '') > 2000) $errors['comment'] = "Комментарий не более 2000 символов";
+    if (empty($data['metal_type']) || !isset($metal_prices[$data['metal_type']])) $errors['metal_type'] = "Выберите металл";
+    if (empty($data['amount_grams']) || !is_numeric($data['amount_grams']) || $data['amount_grams'] <= 0) $errors['amount_grams'] = "Введите корректное количество граммов";
     return empty($errors);
 }
 ?>
