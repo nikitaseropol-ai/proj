@@ -3,12 +3,6 @@ require_once 'config.php';
 
 $table_users = 'bank_users';
 $table_orders = 'bank_orders';
-$metal_prices = [
-    'gold' => 6000,
-    'silver' => 80,
-    'platinum' => 3000,
-    'palladium' => 4000
-];
 
 $input = file_get_contents('php://input');
 $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
@@ -30,7 +24,7 @@ if (!$data) {
     outputResponse(['error' => 'Invalid input'], $acceptType);
 }
 
-// --- Логин ---
+// Логин
 if (isset($data['action']) && $data['action'] === 'login') {
     $login = $data['login'] ?? '';
     $password = $data['password'] ?? '';
@@ -49,7 +43,7 @@ if (isset($data['action']) && $data['action'] === 'login') {
     exit;
 }
 
-// --- Создание или обновление заказа ---
+// Создание/обновление заказа
 $user_id = $_SESSION['user_id'] ?? null;
 $isAuth = !!$user_id;
 
@@ -64,7 +58,7 @@ $grams = (float)$data['amount_grams'];
 $total_price = $grams * $metal_prices[$metal];
 
 if (!$isAuth) {
-    // НОВЫЙ КЛИЕНТ
+    // Новый клиент
     $login = generateUniqueLogin($mysqli, $table_users);
     $plainPassword = generateRandomPassword();
     $passwordHash = password_hash($plainPassword, PASSWORD_DEFAULT);
@@ -98,16 +92,14 @@ if (!$isAuth) {
         outputResponse(['error' => 'Ошибка сервера: ' . $e->getMessage()], $acceptType);
     }
 } else {
-    // ОБНОВЛЕНИЕ ЗАКАЗА (авторизованный пользователь)
+    // Обновление (авторизованный)
     $mysqli->begin_transaction();
     try {
-        // Обновляем личные данные
         $stmt = $mysqli->prepare("UPDATE `$table_users` SET fullname=?, phone=?, email=?, address=? WHERE id=?");
         $stmt->bind_param("ssssi", $data['fullname'], $data['phone'], $data['email'], $data['address'], $user_id);
         $stmt->execute();
         $stmt->close();
         
-        // Обновляем или создаём заказ
         $stmt = $mysqli->prepare("SELECT id FROM `$table_orders` WHERE user_id = ?");
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
