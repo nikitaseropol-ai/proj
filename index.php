@@ -113,44 +113,22 @@ $metals_info = [
             background: rgba(255,255,255,0.05);
         }
         .nav a:hover { background: rgba(255,255,255,0.15); color: #fff; }
-        /* Hero секция с фото */
+        /* Hero секция (только текст) */
         .hero {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 40px;
+            text-align: left;
             padding: 60px 0 40px;
-            flex-wrap: wrap;
         }
-        .hero-text {
-            flex: 1;
-        }
-        .hero-text h1 {
+        .hero h1 {
             font-size: 3rem;
             font-weight: 600;
             margin-bottom: 20px;
             color: #fff;
         }
-        .hero-text p {
+        .hero p {
             font-size: 1.1rem;
             opacity: 0.8;
             line-height: 1.5;
-        }
-        .hero-image {
-            flex: 1;
-            background: #1e2a3a;
-            border-radius: 12px;
-            min-height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border: 1px solid #2c3e50;
-        }
-        .hero-image img {
-            width: 100%;
-            height: auto;
-            display: block;
+            max-width: 700px;
         }
         /* Карточки металлов */
         .metals-section {
@@ -329,7 +307,7 @@ $metals_info = [
         @media (max-width: 800px) {
             .form-grid { grid-template-columns: 1fr; }
             .full-width { grid-column: span 1; }
-            .hero-text h1 { font-size: 2rem; }
+            .hero h1 { font-size: 2rem; }
         }
     </style>
 </head>
@@ -355,17 +333,10 @@ $metals_info = [
         </div>
     </div>
 
-    <!-- Hero с фото (здесь будет ваше изображение драгметаллов) -->
+    <!-- Hero секция (только текст, без заглушки с фото) -->
     <div class="hero">
-        <div class="hero-text">
-            <h1>Драгоценные металлы<br>из банка на руки</h1>
-            <p>Золото, серебро, платина, палладий — официальные слитки, проба 999.9. Доставка или самовывоз.</p>
-        </div>
-        <div class="hero-image">
-            <!-- ЗДЕСЬ ВСТАВЬТЕ ВАШЕ ФОТО, НАПРИМЕР: -->
-            <!-- <img src="gold-bars.jpg" alt="Золотые слитки"> -->
-            <div style="padding:20px; color:#6c7a89;">Вставьте сюда фото<br>драгоценных металлов</div>
-        </div>
+        <h1>Драгоценные металлы<br>из банка на руки</h1>
+        <p>Золото, серебро, платина, палладий — официальные слитки, проба 999.9. Доставка или самовывоз.</p>
     </div>
 
     <!-- Карточки металлов -->
