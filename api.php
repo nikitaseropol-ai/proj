@@ -1,10 +1,15 @@
 <?php
 require_once 'config.php';
 
-$table_users = 'cat_users';
-$table_rentals = 'cat_rentals';
+$table_users = 'bank_users';
+$table_orders = 'bank_orders';
+$metal_prices = [
+    'gold' => 6000,
+    'silver' => 80,
+    'platinum' => 3000,
+    'palladium' => 4000
+];
 
-// Определяем входной формат
 $input = file_get_contents('php://input');
 $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
 $acceptType = $_SERVER['HTTP_ACCEPT'] ?? 'application/json';
@@ -14,9 +19,7 @@ if (strpos($contentType, 'application/json') !== false) {
     $data = json_decode($input, true);
 } elseif (strpos($contentType, 'application/xml') !== false || strpos($contentType, 'text/xml') !== false) {
     $xml = simplexml_load_string($input);
-    if ($xml) {
-        $data = json_decode(json_encode($xml), true);
-    }
+    if ($xml) $data = json_decode(json_encode($xml), true);
 } else {
     http_response_code(415);
     outputResponse(['error' => 'Unsupported Media Type'], $acceptType);
@@ -46,18 +49,22 @@ if (isset($data['action']) && $data['action'] === 'login') {
     exit;
 }
 
-// --- Аренда (создание или обновление) ---
+// --- Создание или обновление заказа ---
 $user_id = $_SESSION['user_id'] ?? null;
 $isAuth = !!$user_id;
 
 $errors = [];
-if (!validateRentalData($data, $errors)) {
+if (!validateOrderData($data, $errors, $metal_prices)) {
     http_response_code(422);
     outputResponse(['errors' => $errors], $acceptType);
 }
 
+$metal = $data['metal_type'];
+$grams = (float)$data['amount_grams'];
+$total_price = $grams * $metal_prices[$metal];
+
 if (!$isAuth) {
-    // НОВЫЙ ПОЛЬЗОВАТЕЛЬ
+    // НОВЫЙ КЛИЕНТ
     $login = generateUniqueLogin($mysqli, $table_users);
     $plainPassword = generateRandomPassword();
     $passwordHash = password_hash($plainPassword, PASSWORD_DEFAULT);
@@ -70,12 +77,8 @@ if (!$isAuth) {
         $newUserId = $mysqli->insert_id;
         $stmt->close();
         
-        $stmt = $mysqli->prepare("INSERT INTO `$table_rentals` (user_id, cat_name, start_date, end_date, food, litter, toys, comment) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $food = isset($data['food']) && $data['food'] ? 1 : 0;
-        $litter = isset($data['litter']) && $data['litter'] ? 1 : 0;
-        $toys = isset($data['toys']) && $data['toys'] ? 1 : 0;
-        $comment = $data['comment'] ?? '';
-        $stmt->bind_param("isssiiis", $newUserId, $data['cat_name'], $data['start_date'], $data['end_date'], $food, $litter, $toys, $comment);
+        $stmt = $mysqli->prepare("INSERT INTO `$table_orders` (user_id, metal_type, amount_grams, total_price) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isid", $newUserId, $metal, $grams, $total_price);
         $stmt->execute();
         $stmt->close();
         
@@ -86,7 +89,8 @@ if (!$isAuth) {
             'status' => 'created',
             'login' => $login,
             'password' => $plainPassword,
-            'profile_url' => $profileUrl
+            'profile_url' => $profileUrl,
+            'total_price' => $total_price
         ], $acceptType);
     } catch (Exception $e) {
         $mysqli->rollback();
@@ -94,38 +98,34 @@ if (!$isAuth) {
         outputResponse(['error' => 'Ошибка сервера: ' . $e->getMessage()], $acceptType);
     }
 } else {
-    // АВТОРИЗОВАННЫЙ пользователь – обновление
+    // ОБНОВЛЕНИЕ ЗАКАЗА (авторизованный пользователь)
     $mysqli->begin_transaction();
     try {
+        // Обновляем личные данные
         $stmt = $mysqli->prepare("UPDATE `$table_users` SET fullname=?, phone=?, email=?, address=? WHERE id=?");
         $stmt->bind_param("ssssi", $data['fullname'], $data['phone'], $data['email'], $data['address'], $user_id);
         $stmt->execute();
         $stmt->close();
         
-        // Проверить, существует ли аренда
-        $stmt = $mysqli->prepare("SELECT id FROM `$table_rentals` WHERE user_id = ?");
+        // Обновляем или создаём заказ
+        $stmt = $mysqli->prepare("SELECT id FROM `$table_orders` WHERE user_id = ?");
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $exists = $stmt->get_result()->fetch_assoc();
         $stmt->close();
         
-        $food = isset($data['food']) && $data['food'] ? 1 : 0;
-        $litter = isset($data['litter']) && $data['litter'] ? 1 : 0;
-        $toys = isset($data['toys']) && $data['toys'] ? 1 : 0;
-        $comment = $data['comment'] ?? '';
-        
         if ($exists) {
-            $stmt = $mysqli->prepare("UPDATE `$table_rentals` SET cat_name=?, start_date=?, end_date=?, food=?, litter=?, toys=?, comment=? WHERE user_id=?");
-            $stmt->bind_param("sssiiiis", $data['cat_name'], $data['start_date'], $data['end_date'], $food, $litter, $toys, $comment, $user_id);
+            $stmt = $mysqli->prepare("UPDATE `$table_orders` SET metal_type=?, amount_grams=?, total_price=? WHERE user_id=?");
+            $stmt->bind_param("sidi", $metal, $grams, $total_price, $user_id);
         } else {
-            $stmt = $mysqli->prepare("INSERT INTO `$table_rentals` (user_id, cat_name, start_date, end_date, food, litter, toys, comment) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("isssiiis", $user_id, $data['cat_name'], $data['start_date'], $data['end_date'], $food, $litter, $toys, $comment);
+            $stmt = $mysqli->prepare("INSERT INTO `$table_orders` (user_id, metal_type, amount_grams, total_price) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("isid", $user_id, $metal, $grams, $total_price);
         }
         $stmt->execute();
         $stmt->close();
         
         $mysqli->commit();
-        outputResponse(['status' => 'updated'], $acceptType);
+        outputResponse(['status' => 'updated', 'total_price' => $total_price], $acceptType);
     } catch (Exception $e) {
         $mysqli->rollback();
         http_response_code(500);
@@ -152,7 +152,7 @@ function array_to_xml($data, &$xml) {
             $subnode = $xml->addChild($key);
             array_to_xml($value, $subnode);
         } else {
-            $xml->addChild($key, htmlspecialchars($value));
+            $xml->addChild($key, htmlspecialchars((string)$value));
         }
     }
 }
