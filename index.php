@@ -20,7 +20,6 @@ if (isset($_SESSION['user_id'])) {
     }
 }
 
-// Массив для карточек металлов
 $metals_info = [
     'gold' => ['name'=>'Золото', 'price'=>6000, 'icon'=>'🥇', 'color'=>'#FFD700', 'desc'=>'Слиток 999.9 пробы, инвестиционное золото'],
     'silver' => ['name'=>'Серебро', 'price'=>80, 'icon'=>'🥈', 'color'=>'#C0C0C0', 'desc'=>'Чистое серебро, лучший подарок'],
@@ -38,9 +37,27 @@ $metals_info = [
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', 'Segoe UI', sans-serif;
-            background: radial-gradient(circle at 10% 20%, #0a0f1e, #05070f);
             color: #e0e0e0;
             overflow-x: hidden;
+        }
+        /* Видео фон */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            z-index: -1;
         }
         /* Анимации */
         @keyframes fadeInUp {
@@ -51,10 +68,6 @@ $metals_info = [
             0% { transform: translateY(0px); }
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
-        }
-        @keyframes shine {
-            0% { background-position: -200% center; }
-            100% { background-position: 200% center; }
         }
         @keyframes coinFall {
             0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
@@ -71,6 +84,8 @@ $metals_info = [
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px 30px;
+            position: relative;
+            z-index: 1;
         }
         /* Header */
         .header {
@@ -139,7 +154,7 @@ $metals_info = [
             gap: 30px;
         }
         .metal-card {
-            background: rgba(20, 30, 45, 0.6);
+            background: rgba(20, 30, 45, 0.7);
             backdrop-filter: blur(12px);
             border-radius: 32px;
             padding: 30px 20px;
@@ -160,7 +175,7 @@ $metals_info = [
         .metal-desc { font-size: 0.9rem; opacity: 0.8; }
         /* Калькулятор */
         .calculator {
-            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(20,30,45,0.8));
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(15px);
             border-radius: 48px;
             padding: 30px 40px;
@@ -295,7 +310,14 @@ $metals_info = [
 </head>
 <body>
 
-<!-- Анимированные монеты -->
+<!-- Видео фон -->
+<video class="video-background" autoplay muted loop playsinline>
+    <source src="https://cdn.pixabay.com/video/2022/06/27/122634-721941451_large.mp4" type="video/mp4">
+    <!-- Запасной вариант: если видео не загрузится, будет просто чёрный фон -->
+    Your browser does not support the video tag.
+</video>
+<div class="overlay"></div>
+
 <div id="coinContainer"></div>
 
 <div class="container">
@@ -402,9 +424,7 @@ $metals_info = [
 </div>
 
 <script>
-    // Цены
     const prices = { gold:6000, silver:80, platinum:3000, palladium:4000 };
-    // Элементы калькулятора
     const rubInput = document.getElementById('rubAmount');
     const calcMetal = document.getElementById('calcMetal');
     const gramsSpan = document.getElementById('gramsResult');
@@ -421,7 +441,6 @@ $metals_info = [
     calcMetal.addEventListener('change', updateCalculator);
     updateCalculator();
 
-    // Синхронизация выбора металла в форме и калькуляторе
     const metalSelect = document.getElementById('metal_type');
     metalSelect.addEventListener('change', function() {
         calcMetal.value = metalSelect.value;
@@ -432,7 +451,6 @@ $metals_info = [
         updateCalculator();
     });
 
-    // Клик по карточке металла
     document.querySelectorAll('.metal-card').forEach(card => {
         card.addEventListener('click', () => {
             const metal = card.dataset.metal;
@@ -441,12 +459,10 @@ $metals_info = [
             updateCalculator();
             document.querySelector('[data-tab="order"]').click();
             document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
-            // Анимация монет
             for(let i=0;i<15;i++) createCoin();
         });
     });
 
-    // Анимация падающих монет
     function createCoin() {
         const coin = document.createElement('div');
         coin.className = 'coin';
@@ -458,7 +474,6 @@ $metals_info = [
         setTimeout(() => coin.remove(), 3000);
     }
 
-    // Переключение вкладок
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', function() {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -478,7 +493,6 @@ $metals_info = [
         document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
     });
 
-    // Логин
     const loginForm = document.getElementById('loginForm');
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -497,7 +511,6 @@ $metals_info = [
         }
     });
 
-    // Отправка заказа
     const orderForm = document.getElementById('orderForm');
     const submitBtn = document.getElementById('submitBtn');
     orderForm.addEventListener('submit', async (e) => {
