@@ -41,14 +41,17 @@ $metals_info = [
             color: #e0e0e0;
             overflow-x: hidden;
         }
-        /* Видео фон */
-        .video-background {
+        /* Фоновое изображение */
+        .bg-image {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            background-image: url('gold-bars.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             z-index: -2;
         }
         .overlay {
@@ -149,13 +152,7 @@ $metals_info = [
             height: auto;
             display: block;
         }
-        .hero-placeholder {
-            color: #6c7a89;
-            text-align: center;
-            padding: 20px;
-            font-size: 0.9rem;
-        }
-        /* Карточки металлов (без золота) */
+        /* Карточки металлов */
         .metals-section {
             margin: 60px 0;
         }
@@ -338,9 +335,8 @@ $metals_info = [
 </head>
 <body>
 
-<video class="video-background" autoplay muted loop playsinline>
-    <source src="https://cdn.pixabay.com/video/2022/06/27/122634-721941451_large.mp4" type="video/mp4">
-</video>
+<!-- Фоновое изображение -->
+<div class="bg-image"></div>
 <div class="overlay"></div>
 
 <div id="coinContainer"></div>
@@ -359,15 +355,16 @@ $metals_info = [
         </div>
     </div>
 
-    <!-- Hero с фото -->
+    <!-- Hero с фото (здесь будет ваше изображение драгметаллов) -->
     <div class="hero">
         <div class="hero-text">
             <h1>Драгоценные металлы<br>из банка на руки</h1>
             <p>Золото, серебро, платина, палладий — официальные слитки, проба 999.9. Доставка или самовывоз.</p>
         </div>
-        <div class="hero-image" id="heroImage">
-            <!-- Здесь вы можете разместить своё фото. Замените содержимое на <img src="ваша_ссылка.jpg"> -->
-            <div class="hero-placeholder">[ Вставьте сюда фото драгметаллов ]</div>
+        <div class="hero-image">
+            <!-- ЗДЕСЬ ВСТАВЬТЕ ВАШЕ ФОТО, НАПРИМЕР: -->
+            <!-- <img src="gold-bars.jpg" alt="Золотые слитки"> -->
+            <div style="padding:20px; color:#6c7a89;">Вставьте сюда фото<br>драгоценных металлов</div>
         </div>
     </div>
 
@@ -406,7 +403,7 @@ $metals_info = [
         </div>
     </div>
 
-    <!-- Блок гарантий и преимуществ -->
+    <!-- Блок гарантий -->
     <div class="guarantees">
         <div class="guarantee-item">
             <div class="guarantee-icon">🔒</div>
@@ -620,9 +617,6 @@ $metals_info = [
         container.style.display = 'block';
         setTimeout(() => container.style.display = 'none', 10000);
     }
-
-    // Чтобы вставить своё фото: найдите элемент heroImage и замените содержимое на <img src="ссылка">
-    // Например: document.querySelector('.hero-image').innerHTML = '<img src="images/gold-bars.jpg" alt="Слитки">';
 </script>
 </body>
 </html>
