@@ -12,10 +12,10 @@ if ($mysqli->connect_error) {
 }
 $mysqli->set_charset("utf8");
 
-// Таблицы
 $table_users = 'bank_users';
 $table_orders = 'bank_orders';
 
+// Создание таблиц
 $mysqli->query("
 CREATE TABLE IF NOT EXISTS `$table_users` (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -40,7 +40,6 @@ CREATE TABLE IF NOT EXISTS `$table_orders` (
     FOREIGN KEY (user_id) REFERENCES `$table_users`(id) ON DELETE CASCADE
 )");
 
-// Цены за грамм (руб)
 $metal_prices = [
     'gold' => 6000,
     'silver' => 80,
