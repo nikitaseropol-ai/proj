@@ -1,37 +1,29 @@
 <?php
-require_once 'config.php'; // содержит подключение к БД и функции
+require_once 'config.php';
 
-// Обработка обычного POST (fallback)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-    // упрощённый fallback – выведем сообщение и покажем форму с ошибкой
-    $fallbackError = "Включите JavaScript для удобной отправки формы.";
-}
-
-// Данные котиков (id, имя, фото (эмодзи или ссылка), описание, характер, цена)
-$cats = [
-    1 => ['id'=>1, 'name'=>'Мурзик', 'photo'=>'images/murzik.jpg', 'price'=>500, 'character'=>'Ласковый и игривый', 'description'=>'Обожает сидеть на руках и мурлыкать. Любит игрушки-мышки.', 'color'=>'рыжий'],
-    2 => ['id'=>2, 'name'=>'Снежок', 'photo'=>'images/snowball.jpg', 'price'=>450, 'character'=>'Спокойный и пушистый', 'description'=>'Белый красавец, любит спать на подушках. Очень фотогеничный.', 'color'=>'белый'],
-    3 => ['id'=>3, 'name'=>'Басик', 'photo'=>'images/basik.jpg', 'price'=>550, 'character'=>'Энергичный и умный', 'description'=>'Черный котик, любит охотиться за лазерной указкой.', 'color'=>'чёрный'],
-    4 => ['id'=>4, 'name'=>'Маркиза', 'photo'=>'images/markiza.jpg', 'price'=>600, 'character'=>'Грациозная и нежная', 'description'=>'Полосатая кошечка, обожает почёсывания за ушком.', 'color'=>'полосатая'],
-    5 => ['id'=>5, 'name'=>'Пухляш', 'photo'=>'images/puhlyash.jpg', 'price'=>400, 'character'=>'Соня и лакомка', 'description'=>'Рыжий толстячок, любит покушать и поспать на солнышке.', 'color'=>'рыжий'],
-    6 => ['id'=>6, 'name'=>'Бусинка', 'photo'=>'images/businka.jpg', 'price'=>650, 'character'=>'Общительная и активная', 'description'=>'Чёрно-белая кошечка, любит играть с детьми.', 'color'=>'чёрно-белый']
+$metal_prices = [
+    'gold' => 6000,
+    'silver' => 80,
+    'platinum' => 3000,
+    'palladium' => 4000
 ];
 
-// Загрузка данных пользователя, если авторизован
+// Загрузка данных авторизованного пользователя
 $userData = null;
+$orderData = null;
 if (isset($_SESSION['user_id'])) {
-    $stmt = $mysqli->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt = $mysqli->prepare("SELECT * FROM `$table_users` WHERE id = ?");
     $stmt->bind_param("i", $_SESSION['user_id']);
     $stmt->execute();
     $userData = $stmt->get_result()->fetch_assoc();
     $stmt->close();
-    
     if ($userData) {
-        $stmt = $mysqli->prepare("SELECT * FROM rentals WHERE user_id = ?");
+        $stmt = $mysqli->prepare("SELECT * FROM `$table_orders` WHERE user_id = ?");
         $stmt->bind_param("i", $_SESSION['user_id']);
         $stmt->execute();
-        $rental = $stmt->get_result()->fetch_assoc();
-        $userData = array_merge($userData, $rental ?: []);
+        $orderData = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        $userData = array_merge($userData, $orderData ?: []);
     }
 }
 ?>
@@ -40,355 +32,322 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Котики на прокат – аренда пушистых друзей</title>
+    <title>BullionBank | Заказ драгоценных металлов</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', 'Poppins', sans-serif;
-            background: #fef9e6;
-            color: #3e2a1f;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0a0f1e 0%, #0c1222 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        /* Анимации */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes glow {
+            0% { text-shadow: 0 0 5px rgba(255,215,0,0.3); }
+            100% { text-shadow: 0 0 20px rgba(255,215,0,0.8); }
+        }
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 20px;
         }
         /* Header */
         .header {
-            background: #ff9f4a;
-            padding: 15px 30px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,215,0,0.3);
             flex-wrap: wrap;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            gap: 15px;
         }
         .logo {
             display: flex;
             align-items: center;
             gap: 10px;
-            font-size: 1.6rem;
-            font-weight: bold;
-            color: white;
-            text-shadow: 2px 2px 0 #b95f1a;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #FFD700, #B8860B);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: glow 2s ease-in-out infinite alternate;
         }
         .logo span { font-size: 2rem; }
-        .nav-links {
-            display: flex;
-            gap: 20px;
-        }
-        .nav-links a {
-            color: white;
+        .nav a {
+            color: #ddd;
             text-decoration: none;
+            margin-left: 25px;
             font-weight: 500;
-            background: rgba(0,0,0,0.2);
+            transition: 0.3s;
             padding: 8px 16px;
             border-radius: 40px;
-            transition: 0.3s;
         }
-        .nav-links a:hover { background: rgba(0,0,0,0.4); }
-        /* Hero */
+        .nav a:hover { background: rgba(255,215,0,0.2); color: #FFD700; }
         .hero {
             text-align: center;
-            padding: 40px 20px;
-            background: linear-gradient(135deg, #ffd89b, #c7e9fb);
-            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+            padding: 60px 20px 40px;
+            animation: fadeInUp 0.8s ease-out;
         }
-        .hero h1 { font-size: 2.5rem; margin-bottom: 10px; }
-        .hero p { font-size: 1.2rem; }
-        /* Cats grid */
-        .cats-section {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
+        .hero h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #fff, #FFD700);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
-        .cats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
-            margin-top: 20px;
-        }
-        .cat-card {
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-        }
-        .cat-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 30px rgba(0,0,0,0.15);
-        }
-        .cat-photo {
-            font-size: 100px;
-            text-align: center;
-            background: #fdebb3;
-            padding: 30px;
-        }
-        .cat-info {
-            padding: 20px;
-            text-align: center;
-        }
-        .cat-info h3 { font-size: 1.8rem; margin-bottom: 8px; }
-        .cat-price { color: #ff7b2c; font-weight: bold; font-size: 1.2rem; }
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            align-items: center;
+        .hero p { font-size: 1.2rem; margin-top: 10px; opacity: 0.8; }
+        /* Калькулятор */
+        .calculator {
+            background: rgba(20, 30, 45, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 20px 30px;
+            margin: 30px 0;
+            border: 1px solid rgba(255,215,0,0.3);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 20px;
             justify-content: center;
-            z-index: 1000;
         }
-        .modal-content {
-            background: white;
-            max-width: 500px;
-            width: 90%;
-            border-radius: 32px;
-            padding: 25px;
-            position: relative;
-            animation: fadeIn 0.3s;
+        .calc-group {
+            flex: 1;
+            min-width: 180px;
         }
-        .close {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 28px;
-            cursor: pointer;
+        .calc-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #FFD700;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.9); }
-            to { opacity: 1; transform: scale(1); }
+        .calc-group input, .calc-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: #1e2a3a;
+            border: 1px solid #2c3e50;
+            border-radius: 28px;
+            color: white;
+            font-size: 1rem;
+            transition: 0.2s;
         }
-        /* Tabs & Form */
-        .tabs-container {
-            max-width: 800px;
-            margin: 30px auto;
-            background: white;
-            border-radius: 32px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        .calc-group input:focus, .calc-group select:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 10px rgba(255,215,0,0.3);
+        }
+        .calc-result {
+            background: #0f1a24;
+            padding: 12px 24px;
+            border-radius: 40px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .calc-result span { color: #FFD700; font-size: 1.5rem; }
+        /* Форма */
+        .form-container {
+            background: rgba(15, 25, 35, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 40px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 1px solid rgba(255,215,0,0.2);
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
         }
         .tabs {
             display: flex;
-            gap: 10px;
-            border-bottom: 2px solid #ffd89b;
-            margin-bottom: 20px;
+            gap: 15px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #2c3e50;
         }
         .tab {
-            padding: 10px 20px;
+            padding: 12px 28px;
             cursor: pointer;
-            border-radius: 30px 30px 0 0;
-            transition: 0.2s;
+            border-radius: 40px 40px 0 0;
+            transition: 0.3s;
+            font-weight: 600;
         }
         .tab.active {
-            background: #ff9f4a;
-            color: white;
+            background: #FFD700;
+            color: #0a0f1e;
         }
         .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
+        .tab-content.active { display: block; animation: fadeInUp 0.4s; }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
         }
+        .form-group { margin-bottom: 5px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: #0f1a24;
+            border: 1px solid #2c3e50;
+            border-radius: 28px;
+            color: white;
+        }
+        .full-width { grid-column: span 2; }
         button {
-            background: #ff9f4a;
+            background: linear-gradient(135deg, #FFD700, #B8860B);
             border: none;
-            padding: 12px 20px;
+            padding: 14px 28px;
             border-radius: 40px;
             font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            color: white;
             font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            color: #0a0f1e;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255,215,0,0.3);
         }
         .message {
-            padding: 12px;
-            margin: 15px 0;
-            border-radius: 16px;
+            padding: 15px;
+            border-radius: 28px;
+            margin-bottom: 20px;
             display: none;
         }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-        .credentials { background: #fff3cd; color: #856404; }
+        .success { background: #1e3a2f; color: #8bc34a; border-left: 5px solid #8bc34a; }
+        .error { background: #3a1e1e; color: #ff8a8a; border-left: 5px solid #ff4444; }
+        .credentials { background: #2a2a1a; color: #ffd966; border-left: 5px solid #ffd700; }
         footer {
             text-align: center;
-            padding: 20px;
-            background: #3e2a1f;
-            color: white;
+            padding: 30px;
             margin-top: 40px;
+            border-top: 1px solid rgba(255,215,0,0.2);
+            font-size: 0.8rem;
         }
         @media (max-width: 700px) {
-            .header { flex-direction: column; gap: 10px; }
-            .hero h1 { font-size: 1.8rem; }
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .header { flex-direction: column; text-align: center; }
+            .nav a { margin: 0 10px; }
         }
     </style>
 </head>
 <body>
-<div class="header">
-    <div class="logo">
-        <span>🐾</span> КОТИК НА ПРОКАТ
-    </div>
-    <div class="nav-links">
-        <a href="#" id="navRentBtn">Арендовать</a>
-        <a href="#" id="navLoginBtn">Вход</a>
-    </div>
-</div>
-
-<div class="hero">
-    <h1>🐱 Арендуйте котика на выходные! 🐱</h1>
-    <p>Пушистый друг приедет к вам домой с полным набором для счастья</p>
-</div>
-
-<section class="cats-section">
-    <h2 style="text-align:center">Наши хвостатые звёзды</h2>
-    <div class="cats-grid" id="catsGrid">
-        <?php foreach ($cats as $cat): ?>
-        <div class="cat-card" data-cat-id="<?= $cat['id'] ?>">
-            <div class="cat-photo">
-    <img src="<?= htmlspecialchars($cat['photo']) ?>" alt="<?= htmlspecialchars($cat['name']) ?>" style="width:100%; height:150px; object-fit:cover; border-radius:20px;">
-</div>
-            <div class="cat-info">
-                <h3><?= htmlspecialchars($cat['name']) ?></h3>
-                <div class="cat-price"><?= $cat['price'] ?> ₽/день</div>
-            </div>
+<div class="container">
+    <div class="header">
+        <div class="logo"><span>🥇</span> BULLION BANK</div>
+        <div class="nav">
+            <?php if (isset($_SESSION['user_id'])): ?>
+                <span style="margin-right:15px;">👤 <?= htmlspecialchars($_SESSION['user_login']) ?></span>
+                <a href="logout.php">🚪 Выйти</a>
+            <?php else: ?>
+                <a href="#" id="navRentBtn">Заказать</a>
+                <a href="#" id="navLoginBtn">Вход</a>
+            <?php endif; ?>
         </div>
-        <?php endforeach; ?>
     </div>
-</section>
 
-<!-- Модальное окно с деталями котика -->
-<div id="catModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <div id="modalBody"></div>
+    <div class="hero">
+        <h1>Драгоценные металлы из банка</h1>
+        <p>Получите на руки золото, серебро, платину или палладий — полная легальность, проба 999.9</p>
     </div>
-</div>
 
-<div class="tabs-container" id="formContainer">
-    <div class="tabs">
-        <div class="tab active" data-tab="rent">📝 Арендовать котика</div>
-        <div class="tab" data-tab="login">🔐 Войти (редактировать заказ)</div>
+    <!-- Калькулятор рублей -> граммы -->
+    <div class="calculator">
+        <div class="calc-group">
+            <label>💰 Сумма в рублях</label>
+            <input type="number" id="rubAmount" placeholder="Введите сумму" value="100000">
+        </div>
+        <div class="calc-group">
+            <label>🥇 Металл</label>
+            <select id="calcMetal">
+                <option value="gold">Золото (6000 ₽/г)</option>
+                <option value="silver">Серебро (80 ₽/г)</option>
+                <option value="platinum">Платина (3000 ₽/г)</option>
+                <option value="palladium">Палладий (4000 ₽/г)</option>
+            </select>
+        </div>
+        <div class="calc-result">
+            ⚖️ Вы получите <span id="gramsResult">0.00</span> граммов
+        </div>
     </div>
-    <div id="rent-tab" class="tab-content active">
-        <div id="messageBox" class="message"></div>
-        <form id="rentalForm">
-            <div class="form-group">
-                <label>Ваше ФИО *</label>
-                <input type="text" name="fullname" id="fullname" value="<?= htmlspecialchars($userData['fullname'] ?? '') ?>" required>
-            </div>
-            <div class="form-group">
-                <label>Телефон *</label>
-                <input type="tel" name="phone" id="phone" value="<?= htmlspecialchars($userData['phone'] ?? '') ?>" required>
-            </div>
-            <div class="form-group">
-                <label>Email *</label>
-                <input type="email" name="email" id="email" value="<?= htmlspecialchars($userData['email'] ?? '') ?>" required>
-            </div>
-            <div class="form-group">
-                <label>Адрес доставки котика *</label>
-                <input type="text" name="address" id="address" value="<?= htmlspecialchars($userData['address'] ?? '') ?>" required>
-            </div>
-            <div class="form-group">
-                <label>Выберите котика *</label>
-                <select name="cat_name" id="cat_name" required>
-                    <option value="">-- Выберите --</option>
-                    <?php foreach ($cats as $cat): ?>
-                    <option value="<?= htmlspecialchars($cat['name']) ?>" <?= (($userData['cat_name'] ?? '') == $cat['name']) ? 'selected' : '' ?>><?= $cat['name'] ?> (<?= $cat['price'] ?>₽/день)</option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Дата начала аренды *</label>
-                <input type="date" name="start_date" id="start_date" value="<?= htmlspecialchars($userData['start_date'] ?? '') ?>" required>
-            </div>
-            <div class="form-group">
-                <label>Дата окончания аренды *</label>
-                <input type="date" name="end_date" id="end_date" value="<?= htmlspecialchars($userData['end_date'] ?? '') ?>" required>
-            </div>
-            <div class="form-group">
-                <label>Дополнительные опции</label>
-                <div style="display:flex; gap:15px; flex-wrap:wrap;">
-                    <label><input type="checkbox" name="food" value="1" <?= isset($userData['food']) && $userData['food'] ? 'checked' : '' ?>> Корм (300₽/день)</label>
-                    <label><input type="checkbox" name="litter" value="1" <?= isset($userData['litter']) && $userData['litter'] ? 'checked' : '' ?>> Лоток (200₽/день)</label>
-                    <label><input type="checkbox" name="toys" value="1" <?= isset($userData['toys']) && $userData['toys'] ? 'checked' : '' ?>> Игрушки (100₽/день)</label>
+
+    <div class="form-container">
+        <div class="tabs">
+            <div class="tab active" data-tab="order">📄 Оформить заказ</div>
+            <div class="tab" data-tab="login">🔐 Вход для клиентов</div>
+        </div>
+
+        <!-- Форма заказа -->
+        <div id="order-tab" class="tab-content active">
+            <div id="messageBox" class="message"></div>
+            <form id="orderForm">
+                <div class="form-grid">
+                    <div class="form-group"><label>ФИО *</label><input type="text" name="fullname" id="fullname" value="<?= htmlspecialchars($userData['fullname'] ?? '') ?>" required></div>
+                    <div class="form-group"><label>Телефон *</label><input type="tel" name="phone" id="phone" value="<?= htmlspecialchars($userData['phone'] ?? '') ?>" required></div>
+                    <div class="form-group"><label>Email *</label><input type="email" name="email" id="email" value="<?= htmlspecialchars($userData['email'] ?? '') ?>" required></div>
+                    <div class="form-group"><label>Адрес доставки *</label><input type="text" name="address" id="address" value="<?= htmlspecialchars($userData['address'] ?? '') ?>" required></div>
+                    <div class="form-group"><label>Металл *</label>
+                        <select name="metal_type" id="metal_type">
+                            <option value="gold" <?= (($userData['metal_type'] ?? '') == 'gold') ? 'selected' : '' ?>>Золото (6000 ₽/г)</option>
+                            <option value="silver" <?= (($userData['metal_type'] ?? '') == 'silver') ? 'selected' : '' ?>>Серебро (80 ₽/г)</option>
+                            <option value="platinum" <?= (($userData['metal_type'] ?? '') == 'platinum') ? 'selected' : '' ?>>Платина (3000 ₽/г)</option>
+                            <option value="palladium" <?= (($userData['metal_type'] ?? '') == 'palladium') ? 'selected' : '' ?>>Палладий (4000 ₽/г)</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Количество граммов *</label><input type="number" step="0.01" name="amount_grams" id="amount_grams" value="<?= htmlspecialchars($userData['amount_grams'] ?? '') ?>" required></div>
+                    <div class="form-group full-width"><label>Комментарий (необязательно)</label><textarea name="comment" rows="2"></textarea></div>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>Комментарий (пожелания)</label>
-                <textarea name="comment" id="comment" rows="2"><?= htmlspecialchars($userData['comment'] ?? '') ?></textarea>
-            </div>
-            <button type="submit" id="submitBtn"><?= $userData ? 'Обновить аренду' : 'Арендовать котика' ?></button>
-        </form>
-    </div>
-    <div id="login-tab" class="tab-content">
-        <div id="loginMessage" class="message"></div>
-        <form id="loginForm">
-            <div class="form-group">
-                <label>Логин</label>
-                <input type="text" name="login" id="login" required>
-            </div>
-            <div class="form-group">
-                <label>Пароль</label>
-                <input type="password" name="password" id="password" required>
-            </div>
-            <button type="submit">Войти</button>
-        </form>
-        <div style="margin-top:15px; font-size:0.9rem;">* После первой аренды вы получите логин/пароль</div>
-    </div>
-</div>
+                <button type="submit" id="submitBtn"><?= $userData ? 'Обновить заказ' : 'Оформить заказ' ?></button>
+            </form>
+        </div>
 
-<footer>
-    🐾 Лапки в дом — радость в сердце! Все котики привиты и дружелюбны. 🐾
-</footer>
+        <!-- Форма входа -->
+        <div id="login-tab" class="tab-content">
+            <div id="loginMessage" class="message"></div>
+            <form id="loginForm">
+                <div class="form-grid">
+                    <div class="form-group"><label>Логин</label><input type="text" name="login" id="login" required></div>
+                    <div class="form-group"><label>Пароль</label><input type="password" name="password" id="password" required></div>
+                </div>
+                <button type="submit">Войти</button>
+            </form>
+            <div style="margin-top:20px; text-align:center; font-size:0.9rem;">* После первого заказа вы получите логин и пароль для входа</div>
+        </div>
+    </div>
+    <footer>© Bullion Bank — официальные слитки. Цены фиксированы на момент заказа. Доставка курьером или самовывоз из банка.</footer>
+</div>
 
 <script>
-    // Данные котиков из PHP
-    const catsData = <?= json_encode($cats); ?>;
+    // Калькулятор
+    const rubInput = document.getElementById('rubAmount');
+    const calcMetal = document.getElementById('calcMetal');
+    const gramsSpan = document.getElementById('gramsResult');
+    const prices = { gold:6000, silver:80, platinum:3000, palladium:4000 };
     
-    // Модальное окно
-    const modal = document.getElementById('catModal');
-    const modalBody = document.getElementById('modalBody');
-    const closeModal = document.querySelector('.close');
-    
-    // Открыть модалку с информацией о котике
-    function openCatModal(catId) {
-        const cat = catsData[catId];
-        if (!cat) return;
-        modalBody.innerHTML = `
-            <h2>${cat.name}</h2>
-            <div style="text-align:center">
-    <img src="${cat.photo}" alt="${cat.name}" style="max-width:100%; max-height:200px; border-radius:20px;">
-</div>
-            <p><strong>Характер:</strong> ${cat.character}</p>
-            <p><strong>Цвет:</strong> ${cat.color}</p>
-            <p><strong>Цена аренды:</strong> ${cat.price} ₽/день</p>
-            <p><strong>Подробнее:</strong> ${cat.description}</p>
-            <button id="rentFromModal" style="margin-top:15px;">Арендовать ${cat.name}</button>
-        `;
-        modal.style.display = 'flex';
-        document.getElementById('rentFromModal')?.addEventListener('click', () => {
-            modal.style.display = 'none';
-            document.getElementById('cat_name').value = cat.name;
-            document.querySelector('[data-tab="rent"]').click();
-            window.scrollTo({ top: document.getElementById('formContainer').offsetTop - 20, behavior: 'smooth' });
-        });
+    function updateCalculator() {
+        let rub = parseFloat(rubInput.value);
+        if (isNaN(rub)) rub = 0;
+        const metal = calcMetal.value;
+        const grams = rub / prices[metal];
+        gramsSpan.textContent = grams.toFixed(2);
+        // также синхронизируем поле amount_grams, если пользователь хочет
+        document.getElementById('amount_grams').value = grams.toFixed(2);
     }
-    
-    // Закрыть модалку
-    closeModal.onclick = () => modal.style.display = 'none';
-    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
-    
-    // Обработчики кликов по карточкам
-    document.querySelectorAll('.cat-card').forEach(card => {
-        card.addEventListener('click', (e) => {
-            const catId = card.dataset.catId;
-            openCatModal(catId);
-        });
+    rubInput.addEventListener('input', updateCalculator);
+    calcMetal.addEventListener('change', updateCalculator);
+    updateCalculator();
+
+    // При изменении металла в форме тоже обновляем калькулятор? опционально
+    const metalSelect = document.getElementById('metal_type');
+    metalSelect.addEventListener('change', function() {
+        // синхронизируем выбор в калькуляторе
+        calcMetal.value = metalSelect.value;
+        updateCalculator();
     });
-    
+
     // Переключение вкладок
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', function() {
@@ -398,53 +357,53 @@ if (isset($_SESSION['user_id'])) {
             document.getElementById(this.dataset.tab + '-tab').classList.add('active');
         });
     });
-    
-    // Навигационные кнопки
-    document.getElementById('navRentBtn').addEventListener('click', (e) => {
+    document.getElementById('navRentBtn')?.addEventListener('click', (e) => {
         e.preventDefault();
-        document.querySelector('[data-tab="rent"]').click();
-        document.getElementById('formContainer').scrollIntoView({ behavior: 'smooth' });
+        document.querySelector('[data-tab="order"]').click();
+        document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
     });
-    document.getElementById('navLoginBtn').addEventListener('click', (e) => {
+    document.getElementById('navLoginBtn')?.addEventListener('click', (e) => {
         e.preventDefault();
         document.querySelector('[data-tab="login"]').click();
-        document.getElementById('formContainer').scrollIntoView({ behavior: 'smooth' });
+        document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
     });
-    
+
     // Логин
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const login = document.getElementById('login').value;
         const password = document.getElementById('password').value;
-        const resp = await fetch('api.php', {
+        const response = await fetch('api.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             body: JSON.stringify({ action: 'login', login, password })
         });
-        const data = await resp.json();
+        const data = await response.json();
         if (data.status === 'ok') {
             window.location.reload();
         } else {
             showMessage('loginMessage', 'Неверный логин или пароль', 'error');
         }
     });
-    
-    // Отправка формы аренды
-    const form = document.getElementById('rentalForm');
+
+    // Отправка заказа
+    const form = document.getElementById('orderForm');
     const submitBtn = document.getElementById('submitBtn');
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(form);
         const jsonData = {};
         for (let [key, val] of formData.entries()) {
-            if (key === 'food' || key === 'litter' || key === 'toys') {
-                jsonData[key] = true;
-            } else {
-                jsonData[key] = val;
-            }
+            jsonData[key] = val;
         }
-        ['food', 'litter', 'toys'].forEach(opt => { if (!jsonData[opt]) jsonData[opt] = false; });
-        
+        // если есть поле comment
+        jsonData.comment = document.querySelector('textarea[name="comment"]').value;
+        // валидация граммов
+        const grams = parseFloat(jsonData.amount_grams);
+        if (isNaN(grams) || grams <= 0) {
+            showMessage('messageBox', 'Введите корректное количество граммов', 'error');
+            return;
+        }
         submitBtn.disabled = true;
         submitBtn.textContent = 'Отправка...';
         try {
@@ -456,10 +415,10 @@ if (isset($_SESSION['user_id'])) {
             const result = await response.json();
             if (response.status === 200 || response.status === 201) {
                 if (result.status === 'created') {
-                    showMessage('messageBox', `✅ Учётная запись создана!<br>🔑 Логин: ${result.login}<br>🔒 Пароль: ${result.password}<br><a href="${result.profile_url}" target="_blank">📋 Ваш профиль</a>`, 'credentials');
+                    showMessage('messageBox', `✅ Заказ оформлен!<br>🔑 Логин: ${result.login}<br>🔒 Пароль: ${result.password}<br><a href="${result.profile_url}" target="_blank">📋 Ваш профиль</a><br>💰 Итого: ${result.total_price} руб.`, 'credentials');
                     form.reset();
                 } else if (result.status === 'updated') {
-                    showMessage('messageBox', 'Данные успешно обновлены!', 'success');
+                    showMessage('messageBox', `Заказ обновлён! Итого: ${result.total_price} руб.`, 'success');
                 }
             } else if (response.status === 422 && result.errors) {
                 let errMsg = Object.values(result.errors).join('<br>');
@@ -471,16 +430,16 @@ if (isset($_SESSION['user_id'])) {
             showMessage('messageBox', 'Ошибка соединения. Проверьте интернет.', 'error');
         } finally {
             submitBtn.disabled = false;
-            submitBtn.textContent = '<?= $userData ? 'Обновить аренду' : 'Арендовать котика' ?>';
+            submitBtn.textContent = '<?= $userData ? 'Обновить заказ' : 'Оформить заказ' ?>';
         }
     });
-    
+
     function showMessage(containerId, text, type) {
         const container = document.getElementById(containerId);
         container.innerHTML = text;
         container.className = `message ${type}`;
         container.style.display = 'block';
-        setTimeout(() => { container.style.display = 'none'; }, 8000);
+        setTimeout(() => container.style.display = 'none', 8000);
     }
 </script>
 </body>
