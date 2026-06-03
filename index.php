@@ -63,7 +63,7 @@ $metals_info = [
             background: rgba(10, 14, 26, 0.85);
             z-index: -1;
         }
-        /* Анимация монет (лёгкая) */
+        /* Анимация монет */
         @keyframes coinFall {
             0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
             100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
@@ -113,7 +113,7 @@ $metals_info = [
             background: rgba(255,255,255,0.05);
         }
         .nav a:hover { background: rgba(255,255,255,0.15); color: #fff; }
-        /* Hero секция (только текст) */
+        /* Hero секция */
         .hero {
             text-align: left;
             padding: 60px 0 40px;
@@ -288,15 +288,31 @@ $metals_info = [
         button:hover {
             background: #3a5a7a;
         }
+        /* Сообщения – теперь не исчезают сами */
         .message {
-            padding: 12px 20px;
+            position: relative;
+            padding: 15px 40px 15px 20px;
             border-radius: 8px;
             margin-bottom: 25px;
             display: none;
+            border: 1px solid transparent;
         }
         .success { background: #1e3a2f; color: #8bc34a; border-left: 4px solid #8bc34a; }
         .error { background: #3a1e1e; color: #ff8a8a; border-left: 4px solid #ff4444; }
         .credentials { background: #1e2a3a; color: #aaccff; border-left: 4px solid #5a7a9a; }
+        .message-close {
+            position: absolute;
+            top: 12px;
+            right: 15px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            opacity: 0.7;
+            background: none;
+            border: none;
+            color: inherit;
+        }
+        .message-close:hover { opacity: 1; }
         footer {
             text-align: center;
             padding: 30px;
@@ -333,7 +349,7 @@ $metals_info = [
         </div>
     </div>
 
-    <!-- Hero секция (только текст, без заглушки с фото) -->
+    <!-- Hero секция (только текст) -->
     <div class="hero">
         <h1>Драгоценные металлы<br>из банка на руки</h1>
         <p>Золото, серебро, платина, палладий — официальные слитки, проба 999.9. Доставка или самовывоз.</p>
@@ -376,26 +392,10 @@ $metals_info = [
 
     <!-- Блок гарантий -->
     <div class="guarantees">
-        <div class="guarantee-item">
-            <div class="guarantee-icon">🔒</div>
-            <div class="guarantee-title">Лицензия ЦБ РФ</div>
-            <div class="guarantee-text">Официальная деятельность под надзором Банка России, все операции легальны.</div>
-        </div>
-        <div class="guarantee-item">
-            <div class="guarantee-icon">📦</div>
-            <div class="guarantee-title">Страхование грузов</div>
-            <div class="guarantee-text">Доставка застрахована на полную стоимость, ответственность гарантируем.</div>
-        </div>
-        <div class="guarantee-item">
-            <div class="guarantee-icon">💎</div>
-            <div class="guarantee-title">Проба 999.9</div>
-            <div class="guarantee-text">Слитки мировых стандартов (LBMA), полная сертификация.</div>
-        </div>
-        <div class="guarantee-item">
-            <div class="guarantee-icon">🛡️</div>
-            <div class="guarantee-title">Конфиденциальность</div>
-            <div class="guarantee-text">Ваши данные защищены, информация о сделках не разглашается.</div>
-        </div>
+        <div class="guarantee-item"><div class="guarantee-icon">🔒</div><div class="guarantee-title">Лицензия ЦБ РФ</div><div class="guarantee-text">Официальная деятельность под надзором Банка России, все операции легальны.</div></div>
+        <div class="guarantee-item"><div class="guarantee-icon">📦</div><div class="guarantee-title">Страхование грузов</div><div class="guarantee-text">Доставка застрахована на полную стоимость, ответственность гарантируем.</div></div>
+        <div class="guarantee-item"><div class="guarantee-icon">💎</div><div class="guarantee-title">Проба 999.9</div><div class="guarantee-text">Слитки мировых стандартов (LBMA), полная сертификация.</div></div>
+        <div class="guarantee-item"><div class="guarantee-icon">🛡️</div><div class="guarantee-title">Конфиденциальность</div><div class="guarantee-text">Ваши данные защищены, информация о сделках не разглашается.</div></div>
     </div>
 
     <!-- Форма заказа и входа -->
@@ -581,12 +581,24 @@ $metals_info = [
         }
     });
 
+    // Функция показа сообщения – теперь оно не исчезает само
     function showMessage(containerId, text, type) {
         const container = document.getElementById(containerId);
+        // Удаляем предыдущую кнопку закрытия, если есть
+        const oldClose = container.querySelector('.message-close');
+        if (oldClose) oldClose.remove();
         container.innerHTML = text;
         container.className = `message ${type}`;
+        // Добавляем крестик для закрытия
+        const closeBtn = document.createElement('button');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.className = 'message-close';
+        closeBtn.onclick = function() {
+            container.style.display = 'none';
+        };
+        container.appendChild(closeBtn);
         container.style.display = 'block';
-        setTimeout(() => container.style.display = 'none', 10000);
+        // Автоисчезновение УБРАНО – сообщение остаётся до ручного закрытия.
     }
 </script>
 </body>
